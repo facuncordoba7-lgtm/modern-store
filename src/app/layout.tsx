@@ -32,7 +32,7 @@ export default function RootLayout({
           <main className="flex-grow">{children}</main>
           <footer className="border-t border-slate-200 bg-white py-12">
             <div className="mx-auto max-w-7xl px-4 text-center text-sm text-slate-500">
-              © {new Date().getFullYear()} MODERNSTORE. All rights reserved.
+              © {2026} MODERNSTORE. All rights reserved.
             </div>
           </footer>
         </CartProvider>
