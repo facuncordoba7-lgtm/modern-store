@@ -32,8 +32,8 @@ export async function POST(request: Request) {
     const session = await stripe.checkout.sessions.create({
       line_items: lineItems,
       mode: 'payment',
-      success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/cart`,
+      success_url: `https://modern-store-phi-ashen.vercel.app/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `https://modern-store-phi-ashen.vercel.app/cart`,
     });
 
     return NextResponse.json({ sessionId: session.id, url: session.url });
