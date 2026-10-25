@@ -9,27 +9,17 @@ export default function CartPage() {
   const { cart, removeFromCart, updateQuantity, cartTotal, clearCart } = useCart();
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const handleCheckout = async () => {
-    setIsProcessing(true);
-    try {
-      const response = await fetch('/api/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ items: cart }),
-      });
+  const handleCheckout = () => {
+    // REPLACE 'TU_NUMERO_DE_WHATSAPP' with your actual phone number (e.g., '5491123456789')
+    const phoneNumber = '5493804141002';
 
-      const data = await response.json();
-      if (data.url) {
-        window.location.href = data.url; // Redirect to Stripe Checkout
-      } else {
-        alert('Something went wrong. Please try again.');
-      }
-    } catch (error) {
-      console.error('Checkout error:', error);
-      alert('Error connecting to payment server.');
-    } finally {
-      setIsProcessing(false);
-    }
+    const itemsList = cart
+      .map((item) => `- ${item.name} (x${item.quantity}) - $${(item.price * item.quantity).toFixed(2)}`)
+      .join('%0A');
+
+    const message = `Hola! Quiero hacer un pedido en Modern Store:%0A%0A${itemsList}%0A%0A*Total: $${cartTotal.toFixed(2)}*%0A%0A¿Cómo podemos coordinar el pago y el envío?`;
+
+    window.open(`https://wa.me/${phoneNumber}?text=${message}`, '_blank');
   };
 
   if (cart.length === 0) {

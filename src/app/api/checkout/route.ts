@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
-import Stripe from 'stripe';
+import { MercadoPagoConfig, Preference } from 'mercadopago';
 
-// Initialize Stripe with your secret key
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2026-09-30.endive', // latest version
+// Initialize Mercado Pago with your Access Token
+const client = new MercadoPagoConfig({
+  accessToken: process.env.MP_ACCESS_TOKEN!
 });
 
 export async function POST(request: Request) {
@@ -14,31 +14,35 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'No items in cart' }, { status: 400 });
     }
 
-    // Map cart items to Stripe line items
-    const lineItems = items.map((item: any) => ({
-      price_data: {
-        currency: 'usd',
-        product_data: {
-          name: item.name,
-          description: item.description,
-          images: [item.image],
-        },
-        unit_amount: Math.round(item.price * 100), // Stripe uses cents
-      },
+    // Map cart items to Mercado Pago items
+    const mpItems = items.map((item: any) => ({
+      title: item.name,
+      description: item.description,
+      unit_price: item.price,
       quantity: item.quantity,
+      currency_id: 'ARS', // Set to Argentine Pesos
     }));
 
-    // Create Stripe Checkout Session
-    const session = await stripe.checkout.sessions.create({
-      line_items: lineItems,
-      mode: 'payment',
-      success_url: `https://modern-store-phi-ashen.vercel.app/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `https://modern-store-phi-ashen.vercel.app/cart`,
+    const preference = new Preference(client);
+
+    const response = await preference.create({
+      body: {
+        items: mpItems,
+        back_urls: {
+          success: 'https://modern-store-phi-ashen.vercel.app/success',
+          failure: 'https://modern-store-phi-ashen.vercel.app/cart',
+          failure_detail: 'https://modern-store-phi-ashen.vercel.app/cart',
+        },
+        auto_return: 'approved',
+      },
     });
 
-    return NextResponse.json({ sessionId: session.id, url: session.url });
+    return NextResponse.json({
+      id: response.id,
+      url: response.init_point // This is the payment link
+    });
   } catch (error: any) {
-    console.error('Stripe Error:', error);
+    console.error('Mercado Pago Error:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
